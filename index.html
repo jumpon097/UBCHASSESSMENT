@@ -6,21 +6,88 @@
     <meta http-equiv="X-UA-Compatible" content="IE=edge">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>ระบบการประเมินหน่วยงาน ภารกิจวิชาการ โรงพยาบาลมะเร็งอุบลราชธานี</title>
+    
+    <!-- ไอคอนและสีธีมสำหรับ PWA -->
     <link rel="icon" type="image/png" href="https://img2.pic.in.th/35F9F2E4-F93B-4E93-8630-AA51B9AE5118.png">
+    <link rel="apple-touch-icon" href="https://img2.pic.in.th/35F9F2E4-F93B-4E93-8630-AA51B9AE5118.png">
+    <meta name="theme-color" content="#0369a1">
+    
     <style>
         body, html {
             margin: 0;
             padding: 0;
             height: 100%;
             overflow: hidden; /* ป้องกันการเลื่อนซ้ำซ้อนด้านนอก */
+            background-color: #f8fafc;
         }
         iframe {
             width: 100%;
             height: 100vh;
             border: none;
+            display: block;
         }
     </style>
 </head>
 <body>
     <iframe src="https://script.google.com/macros/s/AKfycbyzXqTObFyYTblsuQjaWsJa6qjtYfJK4lZa8K_JnoIoFtpzMgKk55emoozxzVAwQ1Nr/exec"></iframe>
+
+    <!-- Script สำหรับสร้าง PWA (Installable App) -->
+    <script>
+        function setupPWA() {
+            try {
+                // 1. สร้าง Manifest ฝังลงไปในหน้าเว็บ (กำหนดชื่อและไอคอนแอป)
+                const manifest = {
+                    "name": "ระบบประเมินผล รพ.มะเร็งอุบลราชธานี",
+                    "short_name": "ประเมินผล รพ.",
+                    "start_url": ".",
+                    "display": "standalone",
+                    "background_color": "#f8fafc",
+                    "theme_color": "#0369a1",
+                    "icons": [
+                        {
+                            "src": "https://img2.pic.in.th/35F9F2E4-F93B-4E93-8630-AA51B9AE5118.png",
+                            "sizes": "192x192",
+                            "type": "image/png",
+                            "purpose": "any maskable"
+                        },
+                        {
+                            "src": "https://img2.pic.in.th/35F9F2E4-F93B-4E93-8630-AA51B9AE5118.png",
+                            "sizes": "512x512",
+                            "type": "image/png",
+                            "purpose": "any maskable"
+                        }
+                    ]
+                };
+                
+                const manifestBlob = new Blob([JSON.stringify(manifest)], {type: 'application/json'});
+                const manifestUrl = URL.createObjectURL(manifestBlob);
+                
+                let manifestEl = document.createElement('link');
+                manifestEl.rel = 'manifest';
+                manifestEl.href = manifestUrl;
+                document.head.appendChild(manifestEl);
+
+                // 2. สร้าง Service Worker (บังคับให้มีเพื่อให้ผ่านเกณฑ์ PWA ของ Chrome)
+                if ('serviceWorker' in navigator) {
+                    const swCode = `
+                        self.addEventListener('install', (e) => self.skipWaiting());
+                        self.addEventListener('activate', (e) => self.clients.claim());
+                        self.addEventListener('fetch', (e) => {});
+                    `;
+                    const swBlob = new Blob([swCode], {type: 'application/javascript'});
+                    const swUrl = URL.createObjectURL(swBlob);
+                    
+                    navigator.serviceWorker.register(swUrl)
+                        .then(() => console.log('PWA Service Worker Registered!'))
+                        .catch(err => console.error('SW Error:', err));
+                }
+            } catch (error) {
+                console.error("PWA Setup Error:", error);
+            }
+        }
+
+        // รันสคริปต์ทันทีที่หน้าเว็บโหลดเสร็จ
+        window.addEventListener('load', setupPWA);
+    </script>
 </body>
+</html>
